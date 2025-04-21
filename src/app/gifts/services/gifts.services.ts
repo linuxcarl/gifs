@@ -1,11 +1,18 @@
 import { HttpClient } from "@angular/common/http";
-import { inject, Injectable, signal } from "@angular/core";
+import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { environment } from "@environments/environment";
 import { Gift } from "../interfaces/gift.interface";
 import { GiftMapper } from "../mapper/gift.mapper";
 import { GiphyResponse } from "../interfaces/giphy.interfaces";
-import { map } from "rxjs";
+import { map, tap } from "rxjs";
 
+const GIF_KEY = 'gifs'
+
+const loadFromLocalStorage = () => {
+  const gifsFromLocalStorage = localStorage.getItem(GIF_KEY) ?? '{}';
+  const gifs = JSON.parse(gifsFromLocalStorage);
+  return gifs;
+}
 @Injectable({providedIn: 'root'})
 export class GiftsService {
 
@@ -14,6 +21,13 @@ export class GiftsService {
   trendingGifts =signal<Gift[]>([])
   trendingGiftsLoading = signal(true)
 
+  searchHistory = signal<Record<string, Gift[]>>(loadFromLocalStorage())
+  searchHistoryKeys = computed(() => Object.keys(this.searchHistory()))
+
+saveGifsToLocalStorage = effect(() => {
+  const historyString = JSON.stringify(this.searchHistory());
+  localStorage.setItem(GIF_KEY, historyString);
+})
 
   constructor() {
     this.loadTrendingGifts()
@@ -43,7 +57,17 @@ export class GiftsService {
     })
     .pipe(
       map(({data})=> data),
-      map((items)=> GiftMapper.mapGiphyItemsToGigtArray(items))
+      map((items)=> GiftMapper.mapGiphyItemsToGigtArray(items)),
+      tap((items) => {
+        this.searchHistory.update((history) => ({
+          ...history,
+          [query.toLowerCase()]: items,
+        }));
+      })
     )
+  }
+
+  getHistoryGifs(query:string): Gift[]{
+    return this.searchHistory()[query] ?? []
   }
 }

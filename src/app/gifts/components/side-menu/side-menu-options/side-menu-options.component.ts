@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { GiftsService } from 'src/app/gifts/services/gifts.services';
 
 interface MenuOption{
   icon: string;
@@ -14,6 +15,8 @@ interface MenuOption{
   templateUrl: './side-menu-options.component.html',
 })
 export default class SideMenuOptionsComponent {
+  giftService = inject(GiftsService)
+
   menuOptions : MenuOption[] = [
     {
       icon: 'fa-solid fa-chart-line',
