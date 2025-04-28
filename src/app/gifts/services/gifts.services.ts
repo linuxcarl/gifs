@@ -21,6 +21,15 @@ export class GiftsService {
   trendingGifts =signal<Gift[]>([])
   trendingGiftsLoading = signal(true)
 
+  trendingGifsGroups = computed<Gift[][]>(()=>{
+    const groups = []
+    for( let i = 0; i < this.trendingGifts().length; i+=3){
+      groups.push(this.trendingGifts().slice(i, i+3))
+    }
+    console.log(groups)
+    return groups;
+  })
+
   searchHistory = signal<Record<string, Gift[]>>(loadFromLocalStorage())
   searchHistoryKeys = computed(() => Object.keys(this.searchHistory()))
 

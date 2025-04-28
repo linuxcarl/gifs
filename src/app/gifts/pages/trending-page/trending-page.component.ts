@@ -4,7 +4,7 @@ import { GiftsService } from '../../services/gifts.services';
 
 @Component({
   selector: 'app-trending-page',
-  imports: [GiftListComponent],
+  imports: [],
   templateUrl: './trending-page.component.html',
 })
 export default class TrendingPageComponent {
