@@ -19,14 +19,14 @@ export class GiftsService {
   private http = inject(HttpClient)
 
   trendingGifts =signal<Gift[]>([])
-  trendingGiftsLoading = signal(true)
+  trendingGiftsLoading = signal(false)
+  trendingPage = signal(0)
 
   trendingGifsGroups = computed<Gift[][]>(()=>{
     const groups = []
     for( let i = 0; i < this.trendingGifts().length; i+=3){
       groups.push(this.trendingGifts().slice(i, i+3))
     }
-    console.log(groups)
     return groups;
   })
 
@@ -45,23 +45,31 @@ saveGifsToLocalStorage = effect(() => {
     this.http.get<GiphyResponse>(`${environment.giphyApiUrl}/gifs/trending`,{
       params:{
         'api_key': environment.giphyApiKey,
-        liimit: 12,
-        offset: 0,
+        limit: 21,
+        offset: this.trendingPage() * 21,
       }
     }).subscribe((response)=>{
-      const gifts = GiftMapper.mapGiphyItemsToGigtArray(response.data)
-      this.trendingGifts.set(gifts)
+      const gifs = GiftMapper.mapGiphyItemsToGigtArray(response.data)
+      this.trendingGifts.update(currentGifs =>[
+        ...currentGifs,
+        ...gifs
+      ])
       this.trendingGiftsLoading.set(false)
+      this.trendingPage.update((page) => page + 1)
     })
   }
 
   searchGifts(query: string){
+    if(this.trendingGiftsLoading()) return;
+
+    this.trendingGiftsLoading.set(true)
+
     return this.http.get<GiphyResponse>(`${environment.giphyApiUrl}/gifs/search`,{
       params:{
         'api_key': environment.giphyApiKey,
         q: query,
-        limit: 12,
-        offset: 0,
+        limit: 21,
+        offset: this.trendingPage() * 21,
       }
     })
     .pipe(

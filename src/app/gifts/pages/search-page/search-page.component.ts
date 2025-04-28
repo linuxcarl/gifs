@@ -13,9 +13,9 @@ export default class SearchPageComponent {
   gifs = signal<Gift[]>([])
 
   onSearch(query:string){
-    this.giftsService.searchGifts(query).subscribe((response: Gift[]) => {
-      this.gifs.set(response)
-    }
-    )
+    // this.giftsService.searchGifts(query).subscribe((response: Gift[]) => {
+    //     this.gifs.set(response)
+    //   }
+    // )
   }
 }
